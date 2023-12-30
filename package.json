@@ -9,7 +9,7 @@
     "dev": "vitest",
     "test": "vitest run",
     "build": "tsup src/index.ts --format cjs,esm --dts",
-    "validate": "tsc & npm run test",
+    "validate": "tsc",
     "ci": "npm run validate &  npm run build",
     "local": "npm run validate & npm run test"
   },
