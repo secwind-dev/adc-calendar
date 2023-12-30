@@ -1,0 +1,29 @@
+{
+  "name": "adc-calendar",
+  "version": "0.0.1",
+  "description": "Calendar ที่มีทั้ง EN | TH และสามารถ เป็นจาก ค.ศ. เป็ร  พ.ศ. และ custom calendar ได้ตามต้องการ",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "vitest",
+    "test": "vitest run",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "validate": "tsc & npm run test",
+    "ci": "npm run validate &  npm run build",
+    "local": "npm run validate & npm run test"
+  },
+  "keywords": [
+    "calendar",
+    "thai"
+  ],
+  "author": "SecWind <secwind.dev@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "@types/node": "^20.10.6",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0"
+  }
+}
