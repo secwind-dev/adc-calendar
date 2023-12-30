@@ -3,7 +3,7 @@
 สร้างโดย programmer thai
 Calendar ที่สามารถแสดง yyyy/mm/dd ในรูปแบบ ภาษาไทยและอังกฤษ
 
-# จุดเด่น
+# ✨จุดเด่น
 
 -   สามารถกำหนดปี เป็น ค.ศ. หรือ พ.ศ.
 -   ใช้ได้ร่วมกับทุก framework หรือเป็น pure JS,TS file
@@ -13,19 +13,37 @@ Calendar ที่สามารถแสดง yyyy/mm/dd ในรูปแ�
 
 ## Installation
 
-`npm i adc-calendar`
+[Link](https://www.npmjs.com/package/adc-directive?activeTab=code) npm package
 
-## Switch to another file
+```sh
+npm i adc-calendar
+```
+
+## Code Example
 
 All your files and folders are presented as a tree in the file explorer. You can switch from one to another by clicking a file in the tree.
 
-## Rename a file
+## Methods
 
-You can rename the current file by clicking the file name in the navigation bar or by clicking the **Rename** button in the file explorer.
+| Name Fn  | Description                 |
+| -------- | --------------------------- |
+| render() | คำสั่งแสดง calendar ui      |
+| stop()   | คำสั่งทำลาย calendar ui     |
+| update() | คำสั่ง update(date min max) |
 
-## Delete a file
+## Plugins
 
-You can delete the current file by clicking the **Remove** button in the file explorer. The file will be moved into the **Trash** folder and automatically deleted after 7 days of inactivity.
+Dillinger is currently extended with the following plugins.
+Instructions on how to use them in your own application are linked below.
+
+| Plugin           | README                                    |
+| ---------------- | ----------------------------------------- |
+| Dropbox          | [plugins/dropbox/README.md][PlDb]         |
+| GitHub           | [plugins/github/README.md][PlGh]          |
+| Google Drive     | [plugins/googledrive/README.md][PlGd]     |
+| OneDrive         | [plugins/onedrive/README.md][PlOd]        |
+| Medium           | [plugins/medium/README.md][PlMe]          |
+| Google Analytics | [plugins/googleanalytics/README.md][PlGa] |
 
 ## Export a file
 
