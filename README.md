@@ -22,7 +22,7 @@ npm i adc-calendar
 ## Code Example
 
 ```sh
-import swCalendar from 'adc-calendar/swCalendar'
+import {swCalendar} from 'adc-calendar'
 //////////. short State. /////////
 const calendar = new swCalendar('#calendar',{
 	value: new Date(),
