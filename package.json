@@ -1,6 +1,11 @@
 {
   "name": "adc-calendar",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "homepage": "https://github.com/secwind-dev/adc-calendar",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/secwind-dev/adc-calendar"
+  },
   "description": "Calendar ที่มีทั้ง EN | TH และสามารถ เป็นจาก ค.ศ. เป็ร  พ.ศ. และ custom calendar ได้ตามต้องการ",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -8,7 +13,7 @@
   "scripts": {
     "dev": "vitest",
     "test": "vitest run",
-    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "build": "tsup src/index --format cjs,esm --dts",
     "validate": "tsc",
     "ci": "npm run validate &  npm run build",
     "local": "npm run validate & npm run test"

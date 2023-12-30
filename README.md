@@ -1,19 +1,19 @@
 # Welcome ADC-Calendar!
 
-สร้างโดย programmer thai
 Calendar ที่สามารถแสดง yyyy/mm/dd ในรูปแบบ ภาษาไทยและอังกฤษ
 
 # ✨จุดเด่น
 
 -   สามารถกำหนดปี เป็น ค.ศ. หรือ พ.ศ.
--   ใช้ได้ร่วมกับทุก framework หรือเป็น pure JS,TS file
+-   ใช้ได้ร่วมกับทุก framework JS,TS,(React,Vue,Angular ฯลฯ),PHP Laravel
 -   baseเป็น js pureใช้ง่ายและไม่ติด dependencies ใดๆสามารถช้ได้ไปตลอด
 -   ui สวยงาม และ สามารถ custom เองได้หลายวิธี
 -   วิธีใช้เข้าใจได้ง่ายเรียนรู้ได้ง่าย
 
 ## Installation
 
-[Link](https://www.npmjs.com/package/adc-directive?activeTab=code) npm package
+[Link](https://www.npmjs.com/package/adc-directive) adc-directive
+[Link](https://www.npmjs.com/package/adc-calendar) adc-calendar
 
 ```sh
 npm i adc-calendar
@@ -22,20 +22,20 @@ npm i adc-calendar
 ## Code Example
 
 ```sh
-import { swCalendar } from 'adc-calendar'
+import swCalendar from 'adc-calendar/swCalendar'
 //////////. short State. /////////
 const calendar = new swCalendar('#calendar',{
-	value:  new  Date(),
-	nextDate:  (res)  =>  {
+	value: new Date(),
+	nextDate:(res) => {
 		console.log('event ตอนกดเปลี่ยนวันที่ :>> ',  res)
 	},
 })
 //////////. full State. /////////
 const calendar = new swCalendar('#calendar',{
-	value:  new  Date('2024-11-01'),
-	min:  new  Date(),
-	max:  new  Date('2024-11-31'),
-	nextDate:  (res)  =>  {
+	value:  new Date('2024-11-01'),
+	min:  new Date(),
+	max:  new Date('2024-11-31'),
+	nextDate: (res) => {
 		console.log('event ตอนกดเปลี่ยนวันที่ :>> ',  res)
 	},
 	nextMonth:  (res)  =>  {

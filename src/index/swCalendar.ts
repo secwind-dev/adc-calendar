@@ -1,4 +1,4 @@
-import Main, { StateElement } from './main'
+import Main, { StateElement } from '../main'
 type Box = StateElement & {
     children: StateElement[]
 }
