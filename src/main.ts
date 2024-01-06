@@ -44,6 +44,18 @@ class ElementRender {
         }
     }
 
+    protected setStyle(shadow: HTMLElement, style: Record<string, any>) {
+        /////////////  set css root  ////////////////
+        const keys = Object.keys(style!)
+
+        keys.forEach((k) => {
+            if (k in style!)
+                shadow.style.setProperty(`--${k}`, (style! as any)[k]) +
+                    '!important'
+        })
+        ////////////x  set css root  x///////////////
+    }
+
     protected rootEl(): HTMLElement {
         const root = document.querySelector(this.id) as HTMLElement
         return root
@@ -196,39 +208,13 @@ class ElementRender {
         const checkDateDiff_Max = this.onDateDiff(date, max) < 0
         return checkDateDiff_Min || checkDateDiff_Max
     }
-    protected onWeeks(type: 'th' | 'en') {
-        let weeks: Weeks[] = [
-            {
-                th: 'อา.',
-                en: 'Sun',
-            },
-            {
-                th: 'จ.',
-                en: 'Mon',
-            },
-            {
-                th: 'อ.',
-                en: 'Tue',
-            },
-            {
-                th: 'พ.',
-                en: 'Wen',
-            },
-            {
-                th: 'พฤ.',
-                en: 'Thu',
-            },
-            {
-                th: 'ศ.',
-                en: 'Fri',
-            },
-            {
-                th: 'ส.',
-                en: 'Sat',
-            },
-        ]
+    protected onWeeks(type: 'th' | 'en'): string[] {
+        const weeks = {
+            th: ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'],
+            en: ['Sun', 'Mon', 'Tue', 'Wen', 'Thu', 'Fri', 'Sat'],
+        }
 
-        return weeks.map((w) => w[type])
+        return weeks[type]
     }
 
     protected checkSameDate(a: Date, b: Date) {
@@ -250,9 +236,7 @@ class ElementRender {
         return [first_day.getDay(), 7 - (last_day.getDay() + 1)] // ช่องว่างก่อนเริ่มวันที่ 1,ช่องว่างหลังสิ้นเดือน
     }
 
-    protected onDateDiff(current_date: Date, picker_date: Date) {
-        const a = current_date
-        const b = picker_date
+    protected onDateDiff(a: Date, b: Date) {
         const _MS_PER_DAY = 1000 * 60 * 60 * 24
         const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())
         const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate())
@@ -300,7 +284,7 @@ const css = `
     --current: #ffdfd2;
     --text: #151426;
     --text-week: #1e293b;
-    --borderRadius: 1.2rem;
+    --borderRadius: .75rem;
     --border: none;
     --width: 300px;
 
@@ -398,7 +382,7 @@ div[calendar='disabled'] {
     font-weight: 700;
     border-radius: 50%;
 }
-.current_date .picker_date[data_type='DAY'],
+
 .picker_date[data_type='DAY'] {
     background-color: var(--picker);
     border-radius: 50%;
@@ -406,50 +390,29 @@ div[calendar='disabled'] {
     color: var(--text-picker);
 }
 
-.picker_date:not([data_type='DAY']):not(.last):not(.first) {
-    border-radius: 0%;
-    color: var(--text);
-}
-:is(.first, .last).picker_date:not([data_type='DAY']) {
-    color: var(--text-picker);
-}
-
-:is(.current_date.picker_date, .picker_date):not([data_type='DAY']) {
-    background-color: var(--secondary);
-    border-radius: 0%;
-    z-index: 1;
-    position: relative;
-    border-radius: 50%;
-}
-
-.picker_date:not([data_type='DAY']).last::before,
-.picker_date:not([data_type='DAY']).first::before {
-    position: absolute;
-    content: '';
-    width: 100%;
-    height: 100%;
+.first, .last {
     background-color: var(--picker);
-    left: 0%;
-    top: 0;
     border-radius: 50%;
-    z-index: -1;
+    border: 2px solid #ebf0fc;
+    color: var(--text-picker);
+    isolation: isolate;
+    z-index:1;
+    position: relative;
 }
 
-.picker_date:not([data_type='DAY']).last::after,
-.picker_date:not([data_type='DAY']).first::after {
-    position: absolute;
-    content: '';
-    width: 50%;
-    height: 100%;
-    background-color: var(--secondary, #ffdfd2);
-    left: 50%;
-    top: 0;
+.between:not(:is(.first,.last)) {
+    position: relative;
     border-radius: 0%;
-    z-index: -2;
+    color: var(--text-picker);
+    background-color: var(--picker);
+    border-radius: 50%;
 }
-.picker_date:not([data_type='DAY']).last::after {
-    left: 0% !important;
+
+.current_date.between {
+    color: var(--text-color);
+    
 }
+
 
 
 

@@ -1,5 +1,11 @@
 # adc-calendar
 
+## 1.0.0
+
+### Major Changes
+
+- Updated Majos 1.0.0
+
 ## 0.0.3
 
 ### Patch Changes

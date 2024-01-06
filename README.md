@@ -86,7 +86,7 @@ object สำหรับสร้าง calendar
 		--text-current: #ffffff  !important;
 		--text: #151426  !important;
 		--text-week: #1e293b  !important;
-		--borderRadius: 1.2rem  !important;
+		--borderRadius: .75rem  !important;
 		--border: none  !important;
 		--width: 500px  !important;
 		--shadow: none  !important;

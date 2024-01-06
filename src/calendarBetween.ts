@@ -8,7 +8,8 @@ export interface CalenderState {
     nextDate?: (arg: any) => void // function
     nextMonth?: (arg: any) => void // function
     year?: 'en' | 'th'
-    value: Date // '2022-10-30'
+
+    values: Date[]
     min?: Date // '2022-10-30'
     max?: Date // '2022-10-30'
     style?: Style
@@ -41,7 +42,7 @@ let EnumStyle: Style = {
 }
 class Calendar extends Main {
     /*------------------------------Set---------------------------------*/
-    private category = 'DAY' // type day
+    private category: 'DAY' | 'BETWEEN' = 'BETWEEN' // type day
 
     /*-------------x----------------Set-----------------x---------------*/
 
@@ -49,17 +50,23 @@ class Calendar extends Main {
     private nextDate?: ((arg: any) => void) | undefined
     private nextMonth?: ((arg: any) => void) | undefined
     private year: 'en' | 'th' = 'th'
-    private value: Date
     private min: Date = new Date()
     private max: Date = new Date('2200-01-01')
 
     private ui_value: Date
     private style?: Style = {}
+    private values: Date[] = [new Date(), new Date()]
+
+    private betweens: Array<Date | undefined> = [new Date(), new Date()]
 
     constructor(id: string, data: CalenderState) {
         super(id)
-        this.value = data.value || new Date()
-        this.ui_value = data.value || new Date()
+        const startDate = data.values[0] || new Date()
+        const endDate = data.values[1] || new Date()
+        this.values = [startDate, endDate]
+        this.ui_value = this.getValues()[0]!
+
+        this.betweens = this.values
         this.lang = data.lang || 'en'
 
         this.nextDate =
@@ -78,7 +85,8 @@ class Calendar extends Main {
         this.startInit()
 
         const shadow = this.rootEl()
-        this.setStyle(shadow, this.setStyle!)
+        this.setStyle(shadow, this.style!)
+
         const container: Box = {
             tag: 'div',
             props: {
@@ -91,14 +99,14 @@ class Calendar extends Main {
         this.createBox(shadow, container)
     }
 
-    update(data: Partial<Pick<CalenderState, 'max' | 'min' | 'value'>>) {
+    update(data: Partial<Pick<CalenderState, 'max' | 'min' | 'values'>>) {
         this.setState(data)
         this.render()
     }
     getState() {
         return {
             id: this.id,
-            value: this.value,
+            value: this.values,
             ui_value: this.ui_value,
             el: this.rootEl(),
         }
@@ -192,6 +200,22 @@ class Calendar extends Main {
         const date = this.ui_value
         const [first_week, last_week] = this.onBeforeAfterDay(date)
 
+        const dateBetweens = this.getDatesInRange().map((d) =>
+            this.dateToString(d)
+        )
+
+        const clsBetween = (date: Date) => {
+            const index = dateBetweens.indexOf(this.dateToString(date))
+            let cls = []
+            if (this.category == 'BETWEEN') {
+                if (index !== -1) cls.push('between')
+                if (index == 0) cls.push('first')
+                if (index == dateBetweens.length - 1) cls.push('last')
+            }
+
+            return cls.join(' ')
+        }
+
         /*------------------------------set Before---------------------------------*/
         const _beforeDays = (): Date[] => {
             const lists: Date[] = []
@@ -217,7 +241,7 @@ class Calendar extends Main {
             beforeLists.push(
                 this.createDate(
                     _date,
-                    'd_before',
+                    'd_before' + ` ${clsBetween(_date)}`,
                     this.onCheckDisabled(_date, this.min, this.max)
                 )
             )
@@ -229,10 +253,11 @@ class Calendar extends Main {
             const current = this.checkSameDate(new Date(), _date)
                 ? ' current_date'
                 : ''
+
             dayLists.push(
                 this.createDate(
                     _date,
-                    current,
+                    current + ` ${clsBetween(_date)}`,
                     this.onCheckDisabled(_date, this.min, this.max)
                 )
             )
@@ -252,7 +277,7 @@ class Calendar extends Main {
             afterLists.push(
                 this.createDate(
                     _date,
-                    'd_after',
+                    'd_after' + ` ${clsBetween(_date)}`,
                     this.onCheckDisabled(_date, this.min, this.max)
                 )
             )
@@ -260,6 +285,36 @@ class Calendar extends Main {
         /*-------------x----------------set After-----------------x---------------*/
         days.children = [...beforeLists, ...dayLists, ...afterLists]
         return days
+    }
+
+    private getValues() {
+        const startDate =
+            this.values[0]! < this.values[1]! ? this.values[0] : this.values[1]
+        const endDate =
+            this.values[0]! > this.values[1]! ? this.values[0] : this.values[1]
+
+        this.values = [startDate!, endDate!]
+        return [startDate!, endDate!]
+    }
+
+    private getDatesInRange(): Date[] {
+        const lists = []
+        const [startDate, endDate] = this.getValues()
+        const date = new Date(startDate.getTime())
+        while (date <= endDate!) {
+            lists.push(new Date(date))
+            date.setDate(date.getDate() + 1)
+        }
+
+        return lists
+    }
+
+    private dateToString(date: Date) {
+        const day = date.getDate()
+        const month = date.getMonth() + 1
+        const year = date.getFullYear()
+        const currentDate = `${year}-${month}-${day}`
+        return currentDate
     }
 
     private createDate(
@@ -280,20 +335,43 @@ class Calendar extends Main {
         }
 
         if (isDisabled) data.props!['data_calendar'] = 'disabled'
-        if (this.checkSameDate(date, this.value))
+        if (this.checkSameDate(date, this.betweens[0]!))
             data.props!['class'] += ' picker_date'
 
         return data
     }
 
+    private onSortDate(a: Date, b: Date): Date[] {
+        const startDate = a < b ? a : b
+        const endDate = a > b ? a : b
+
+        return [startDate, endDate]
+    }
+
     private onDatePicker(date: Date): void {
         // event เมื่อ กดเลือกวันที่
 
-        this.onSetOption('SET_VALUE_AND_UI', date)
+        this.category = 'DAY'
+        if (this.betweens[0] === undefined) {
+            this.betweens[0] = date
+            // this.is_end_process_between = false
+        } else if (this.betweens[0] && this.betweens[1] === undefined) {
+            // คือการออก event nextDate
+            this.category = 'BETWEEN'
+            this.betweens = this.onSortDate(this.betweens[0], date)
+            this.values = [this.betweens[0]!, this.betweens[1]!]
+            // this.is_end_process_between = true
+            this.onSetOption('SET_VALUE_AND_UI', this.values)
 
-        if (typeof this.nextDate == 'function') {
-            this.nextDate(date)
+            if (typeof this.nextDate == 'function') {
+                this.nextDate(this.values)
+            }
+        } else if (this.betweens[0] && this.betweens[1]) {
+            this.betweens[0] = date
+            this.betweens[1] = undefined
+            // this.is_end_process_between = false
         }
+
         this.render()
     }
 
@@ -316,7 +394,7 @@ class Calendar extends Main {
 
         const newDate = new Date(year, _indexMonth, 1)
 
-        this.onSetOption('SET_UI', newDate)
+        this.onSetOption('SET_UI', [newDate, newDate])
 
         if (typeof this.nextMonth == 'function') {
             this.nextMonth(this.getMonth(newDate))
@@ -325,82 +403,31 @@ class Calendar extends Main {
     }
 
     private setState(
-        data: Partial<Pick<CalenderState, 'max' | 'min' | 'value'>>
+        data: Partial<Pick<CalenderState, 'max' | 'min' | 'values'>>
     ) {
-        if (data.min && data.min <= this.value) {
+        const [start, end] = this.getValues()
+        if (data.min && data.min <= start) {
             this.min = data.min
         }
-        if (data.max && data.max >= this.value) {
+        if (data.max && data.max >= end) {
             this.max = data.max
         }
 
         // if  ถูกเรียกมาจากข้างนอกจริง เอาไว้เปลี่ยนค่า วันเดือน ปี ทั้ง ui และ state แล้วทำการ render calendar ใหม่
-        if (data.value) {
-            this.onSetOption('SET_VALUE_AND_UI', data.value)
+        if (data.values) {
+            this.onSetOption('SET_VALUE_AND_UI', data.values)
         }
     }
-    private onSetOption(type: 'SET_UI' | 'SET_VALUE_AND_UI', date: Date) {
+    private onSetOption(type: 'SET_UI' | 'SET_VALUE_AND_UI', dates: Date[]) {
         //set หน้าปฏิทิน ว่าอยู่เดือนไหน หรือ set value
         if (type === 'SET_VALUE_AND_UI') {
-            this.ui_value = date
-            this.value = date
+            this.ui_value = dates[0]
+            this.values = dates
         } else if (type === 'SET_UI') {
             // ตอนกดเปลี่ยนเดือน
-            this.ui_value = date
+            this.ui_value = dates[0]
         }
     }
 }
 
 export default Calendar
-
-// const short = new Calendar('#calendar', {
-//     value: new Date(),
-//     nextDate: (res) => {
-//         //event ตอนกดเปลี่ยนวันที่
-//         console.log('nextDate :>> ', res)
-//     },
-// })
-// const long = new Calendar('#calendar', {
-//     lang: 'english', // ประเภทภาษา default > en
-//     year: 'th', // ประเภทปี default > en
-//     value: new Date('2024-05-03'), //ค่าเริ่มต้น
-//     min: new Date(), // disabled วันที่น้อยกว่า
-//     max: new Date('3000-01-01'), // disabled วันที่มากกว่า
-//     nextDate: (res) => {
-//         //event ตอนกดเปลี่ยนวันที่
-//         console.log('nextDate :>> ', res)
-//     },
-//     nextMonth: (res) => {
-//         //event ตอนกดเปลี่ยนเดือน
-//         console.log('nextMonth :>> ', res)
-//     },
-//     style: {
-//         //มีหรือไม่มีก็ได้
-//         ['font-family']: `'Arial', sans-serif`,
-//         picker: '#0ea5e9', // สีวันที่กดเลือก --picker
-//         disabled: '#c3c2c8', // สีวันที่ถูก disabled  --disabled
-//         background: '#f3f8fe', //--background
-//         text: '#151426', //สีตัวอักษร
-//         ['text-week']: '#1e293b', //สีตัวอักษร
-//         current: '#ffdfd2', // สีวันที่ปัจจุบัน --calendar_date_current
-//         border: 'none', //--border
-//         borderRadius: '1.2rem', //--borderRadius
-//         shadow: 'none',
-//         width: '300px',
-//     },
-// })
-
-// [calendar='root'] {
-//     --font-family: 'Arial', sans-serif !important;
-//     --background: #f3f8fe !important;
-//     --picker: #0ea5e9 !important;
-//     --text-picker: #fff !important;
-//     --current: #ffdfd2 !important;
-//     --text-current: #ffffff !important;
-//     --text: #151426 !important;
-//     --text-week: #1e293b !important;
-//     --borderRadius: 1.2rem !important;
-//     --border: none !important;
-//     --width: 500px !important;
-//     --shadow: none !important;
-// }
