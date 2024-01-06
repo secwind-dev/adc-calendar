@@ -78,7 +78,7 @@ class Calendar extends Main {
         this.startInit()
 
         const shadow = this.rootEl()
-        this.setStyle(shadow, this.setStyle!)
+        this.setStyle(shadow, this.style!)
         const container: Box = {
             tag: 'div',
             props: {
