@@ -1,5 +1,11 @@
 # adc-calendar
 
+## 1.0.1
+
+### Patch Changes
+
+- Update bug setStyle swCalendar
+
 ## 1.0.0
 
 ### Major Changes
