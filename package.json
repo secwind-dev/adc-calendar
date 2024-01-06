@@ -1,6 +1,6 @@
 {
   "name": "adc-calendar",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "homepage": "https://github.com/secwind-dev/adc-calendar",
   "repository": {
     "type": "git",
@@ -11,16 +11,14 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "dev": "vitest",
-    "test": "vitest run",
     "build": "tsup src/index.ts --format cjs,esm --dts",
-    "validate": "tsc",
-    "ci": "npm run validate &  npm run build",
-    "local": "npm run validate & npm run test"
+    "ci": "tsc &  npm run build"
   },
   "keywords": [
     "calendar",
-    "thai"
+    "calendar between",
+    "thai",
+    "ภาษาไทย"
   ],
   "author": "SecWind <secwind.dev@gmail.com>",
   "license": "ISC",
