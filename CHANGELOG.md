@@ -1,5 +1,11 @@
 # adc-calendar
 
+## 1.0.2
+
+### Patch Changes
+
+- Update Bug Methods Stop
+
 ## 1.0.1
 
 ### Patch Changes
