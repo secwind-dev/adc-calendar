@@ -50,7 +50,7 @@ class ElementRender {
         this.id = id
     }
     protected startInit() {
-        this.stop()
+        this.stop(0)
         // Create some CSS to apply to the shadow dom
         const style = document.createElement('style')
 
@@ -65,24 +65,14 @@ class ElementRender {
     /**
      * Stops the calendar by removing it from the DOM.
      */
-    stop() {
+    stop(mileSecond: number = 200) {
         // ลบทิ้งเพ่อสร้างใหม่ หรือ การสั่งปิด calendar
-        const check_for_update = this.rootEl().querySelector(
-            `[calendar="container"]`
-        )
-
-        if (check_for_update) {
-            check_for_update.remove()
-        } else {
-            setTimeout(() => {
-                const check = this.rootEl().querySelector(
-                    `[calendar="container"]`
-                )
-                if (check) {
-                    check.remove()
-                }
-            }, 200)
-        }
+        setTimeout(() => {
+            const check = this.rootEl().querySelector(`[calendar="container"]`)
+            if (check) {
+                check.remove()
+            }
+        }, mileSecond)
     }
 
     // protected setStyle(shadow: HTMLElement, style: Record<string, any>) {
