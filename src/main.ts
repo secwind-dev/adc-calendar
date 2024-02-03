@@ -50,7 +50,10 @@ class ElementRender {
         this.id = id
     }
     protected startInit() {
-        this.stop(0)
+        const check = this.rootEl().querySelector(`[calendar="container"]`)
+        if (check) {
+            check.remove()
+        }
         // Create some CSS to apply to the shadow dom
         const style = document.createElement('style')
 
