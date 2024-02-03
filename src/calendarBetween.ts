@@ -1,4 +1,5 @@
-import Main, { StateElement } from './main'
+import Main, { StateElement, Style } from './main'
+import { addMonth } from 'adc-directive'
 type Box = StateElement & {
     children: StateElement[]
 }
@@ -14,32 +15,7 @@ export interface CalenderState {
     max?: Date // '2022-10-30'
     style?: Style
 }
-type Style = {
-    ['font-family']?: string
-    text?: string
-    ['text-week']?: string
-    current?: string
-    picker?: string
-    disabled?: string
-    background?: string
-    border?: string
-    borderRadius?: string
-    shadow?: string
-    width?: string
-}
-let EnumStyle: Style = {
-    ['font-family']: `'Arial', sans-serif`,
-    picker: '#0ea5e9', // สีวันที่กดเลือก --picker
-    disabled: '#c3c2c8', // สีวันที่ถูก disabled  --disabled
-    background: '#f3f8fe', //--background
-    text: '#151426', //สีตัวอักษร
-    ['text-week']: '#1e293b', //สีตัวอักษร
-    current: '#ffdfd2', // สีวันที่ปัจจุบัน --calendar_date_current
-    border: 'none', //--border
-    borderRadius: '1.2rem', //--borderRadius
-    shadow: 'none',
-    width: '300px',
-}
+
 class Calendar extends Main {
     /*------------------------------Set---------------------------------*/
     private category: 'DAY' | 'BETWEEN' = 'BETWEEN' // type day
@@ -47,8 +23,8 @@ class Calendar extends Main {
     /*-------------x----------------Set-----------------x---------------*/
 
     private lang: 'thai' | 'en' | 'th' | 'english' = 'en'
-    private nextDate?: ((arg: any) => void) | undefined
-    private nextMonth?: ((arg: any) => void) | undefined
+    private nextDate?: ((arg: Date[]) => void) | undefined
+    private nextMonth?: ((arg: Date) => void) | undefined
     private year: 'en' | 'th' = 'th'
     private min: Date = new Date()
     private max: Date = new Date('2200-01-01')
@@ -376,28 +352,12 @@ class Calendar extends Main {
     }
 
     private onChangeMonth(type: 'LEFT' | 'RIGHT') {
-        let year = this.ui_value.getFullYear()
-        let _indexMonth =
-            type === 'RIGHT'
-                ? this.ui_value.getMonth() + 1
-                : this.ui_value.getMonth() - 1
-        if (this.ui_value.getMonth() === 11 && type === 'RIGHT') {
-            // ถ้าเป็นเดือนธันวาคมให้ขึ้นปีใหม่
-            year = this.ui_value.getFullYear() + 1
-            _indexMonth = 0
-        }
-        if (this.ui_value.getMonth() === 0 && type === 'LEFT') {
-            // ถ้าเป็นเดือนธันวาคมให้ขึ้นปีใหม่
-            year = this.ui_value.getFullYear() - 1
-            _indexMonth = 11
-        }
+        const uiValue = addMonth(this.ui_value, type === 'LEFT' ? -1 : 1)
 
-        const newDate = new Date(year, _indexMonth, 1)
-
-        this.onSetOption('SET_UI', [newDate, newDate])
+        this.onSetOption('SET_UI', [uiValue])
 
         if (typeof this.nextMonth == 'function') {
-            this.nextMonth(this.getMonth(newDate))
+            this.nextMonth(uiValue)
         }
         this.render()
     }

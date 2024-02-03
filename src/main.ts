@@ -1,4 +1,36 @@
-export interface StateElement {
+export type Style = {
+    ['font-family']?: string
+    text?: string
+    ['text-week']?: string
+    current?: string
+    picker?: string
+    ['text-picker']?: string
+    dateRadius?: string
+    disabled?: string
+    background?: string
+    border?: string
+    borderRadius?: string
+    shadow?: string
+    width?: string
+}
+
+let EnumStyle: Required<Style> = {
+    ['font-family']: `'Arial', sans-serif`,
+    ['text-picker']: '#fff', // สีตัวอักษรวันที่กดเลือก --text-picker
+    picker: '#0ea5e9', // สีวันที่กดเลือก --picker
+    dateRadius: '50%', // รัศมีวันที่กดเลือก --dateRadius
+    disabled: '#c3c2c8', // สีวันที่ถูก disabled  --disabled
+    background: '#f3f8fe', //--background
+    text: '#151426', //สีตัวอักษร
+    ['text-week']: '#1e293b', //สีตัวอักษร
+    current: '#ffdfd2', // สีวันที่ปัจจุบัน --calendar_date_current
+    border: 'none', //--border
+    borderRadius: '0.75rem', //--borderRadius
+    shadow: 'none',
+    width: '300px',
+}
+
+export type StateElement = {
     tag: string
     props?: Record<string, any> | null
     children?: string | StateElement[]
@@ -9,17 +41,13 @@ export interface StateElement {
     }
     el?: HTMLElement
 }
+
 type Fn = (...arg: any) => void
-interface Weeks {
-    th: string
-    en: string
-}
+
 class ElementRender {
     protected id: string
     constructor(id: string) {
         this.id = id
-
-        console.log(`Calendar id="${this.id}" Started !!`)
     }
     protected startInit() {
         this.stop()
@@ -34,17 +62,31 @@ class ElementRender {
         shadow.setAttribute('calendar', 'root')
     }
 
+    /**
+     * Stops the calendar by removing it from the DOM.
+     */
     stop() {
         // ลบทิ้งเพ่อสร้างใหม่ หรือ การสั่งปิด calendar
-        let check_for_update = this.rootEl().querySelector(
+        const check_for_update = this.rootEl().querySelector(
             `[calendar="container"]`
         )
+
         if (check_for_update) {
             check_for_update.remove()
+        } else {
+            setTimeout(() => {
+                const check = this.rootEl().querySelector(
+                    `[calendar="container"]`
+                )
+                if (check) {
+                    check.remove()
+                }
+            }, 200)
         }
     }
 
-    protected setStyle(shadow: HTMLElement, style: Record<string, any>) {
+    // protected setStyle(shadow: HTMLElement, style: Record<string, any>) {
+    protected setStyle(shadow: HTMLElement, style: Style) {
         /////////////  set css root  ////////////////
         const keys = Object.keys(style!)
 
@@ -210,7 +252,7 @@ class ElementRender {
     }
     protected onWeeks(type: 'th' | 'en'): string[] {
         const weeks = {
-            th: ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'],
+            th: ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'],
             en: ['Sun', 'Mon', 'Tue', 'Wen', 'Thu', 'Fri', 'Sat'],
         }
 
@@ -280,6 +322,7 @@ const css = `
     --background: #f3f8fe;
     --picker: #0ea5e9;
     --text-picker: #fff;
+    --dateRadius: 50%;
     --disabled: #c3c2c8; /* disabled */
     --current: #ffdfd2;
     --text: #151426;
@@ -380,19 +423,19 @@ div[calendar='disabled'] {
     color: var(--text-current);
     font-size: 20px;
     font-weight: 700;
-    border-radius: 50%;
+    border-radius: var(--dateRadius);
 }
 
 .picker_date[data_type='DAY'] {
     background-color: var(--picker);
-    border-radius: 50%;
+    border-radius: var(--dateRadius);
     border: 2px solid #ebf0fc;
     color: var(--text-picker);
 }
 
 .first, .last {
     background-color: var(--picker);
-    border-radius: 50%;
+    border-radius: var(--dateRadius);
     border: 2px solid #ebf0fc;
     color: var(--text-picker);
     isolation: isolate;
@@ -405,7 +448,8 @@ div[calendar='disabled'] {
     border-radius: 0%;
     color: var(--text-picker);
     background-color: var(--picker);
-    border-radius: 50%;
+    border-radius: var(--dateRadius);
+    opacity: 0.75;
 }
 
 .current_date.between {
