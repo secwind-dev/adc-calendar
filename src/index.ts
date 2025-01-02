@@ -1,5 +1,6 @@
-import Calendar from './calendar'
-import CalendarBetween from './calendarBetween'
+// import Calendar from './calendar'
+// import CalendarBetween from './calendarBetween'
 
-export const swCalendar = Calendar
-export const swCalendarBetween = CalendarBetween
+// export  Calendar
+// export const swCalendarBetween = CalendarBetween
+export * from './calendarBetween'
