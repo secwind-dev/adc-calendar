@@ -1,10 +1,10 @@
 {
     "name": "adc-calendar",
-    "version": "1.0.4",
+    "version": "1.1.0",
     "homepage": "https://github.com/secwind-dev/adc-calendar",
     "repository": {
         "type": "git",
-        "url": "https://github.com/secwind-dev/adc-calendar"
+        "url": "https://app-adc.github.io/calendar-docs"
     },
     "description": "Calendar ที่มีทั้ง EN | TH และสามารถ เป็นจาก ค.ศ. เป็ร  พ.ศ. และ custom calendar ได้ตามต้องการ",
     "main": "./dist/index.js",

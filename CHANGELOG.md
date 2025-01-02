@@ -1,5 +1,11 @@
 # adc-calendar
 
+## 1.1.0
+
+### Minor Changes
+
+- Update bug calendar and clean code
+
 ## 1.0.4
 
 ### Patch Changes

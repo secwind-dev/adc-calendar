@@ -12,6 +12,10 @@ jobs:
               with:
                   node-version: '20.x'
             - run: yarn --frozen-lockfile
+            - name: Clean npm cache
+              run: |
+                  rm -rf node_modules
+                  rm -f package-lock.json
             - name: NPM Install
               run: npm install
             - name: Npm run CI
@@ -27,6 +31,10 @@ jobs:
               with:
                   node-version: '20.x'
                   registry-url: https://registry.npmjs.org/
+            - name: Clean npm cache
+              run: |
+                  rm -rf node_modules
+                  rm -f package-lock.json
             - name: NPM Install
               run: npm install
             - name: Npm run build
