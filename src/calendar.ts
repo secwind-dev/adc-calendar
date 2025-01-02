@@ -1,10 +1,12 @@
-import Main, { StateElement, Style } from './main'
 import { addMonth } from 'adc-directive'
+import { DateValidationError } from './composition-calendar'
+import Main from './main'
+import { StateElement, Style } from './type-calendar'
 type Box = StateElement & {
     children: StateElement[]
 }
 
-export type CalenderState = {
+export type CalendarState = {
     lang?: 'thai' | 'en' | 'th' | 'english'
     nextDate?: (arg: any) => void // function
     nextMonth?: (arg: any) => void // function
@@ -15,7 +17,7 @@ export type CalenderState = {
     style?: Style
 }
 
-class Calendar extends Main {
+export class swCalendar extends Main {
     /*------------------------------Set---------------------------------*/
     private category = 'DAY' // type day
 
@@ -25,31 +27,79 @@ class Calendar extends Main {
     private nextDate?: ((arg: Date) => void) | undefined
     private nextMonth?: ((arg: Date) => void) | undefined
     private year: 'en' | 'th' = 'th'
-    private value: Date
+    private value: Date = new Date()
     private min: Date = new Date()
     private max: Date = new Date('2200-01-01')
 
-    private ui_value: Date
+    private ui_value: Date = new Date()
     private style?: Style = {}
 
-    constructor(id: string, data: CalenderState) {
+    constructor(id: string, config: CalendarState) {
         super(id)
-        this.value = data.value || new Date()
-        this.ui_value = data.value || new Date()
-        this.lang = data.lang || 'en'
-
-        this.nextDate =
-            typeof data.nextDate == 'function' ? data.nextDate : undefined
-        this.nextMonth =
-            typeof data.nextMonth == 'function' ? data.nextMonth : undefined
-
-        this.year = data.year == 'th' ? 'th' : 'en' // พ.ศ.  ค.ศ.
-        if (typeof data.style == 'object' && data.style != null) {
-            this.style = Object.assign(this.style!, data.style)
-        }
-        this.setState(data)
+        this.validateConfig(config)
+        this.initializeState(config)
+        this.setupAccessibility()
     }
 
+    /**
+     * กำหนดค่าเริ่มต้นให้กับ state ทั้งหมดของ Calendar
+     * @private
+     * @param config - ค่า configuration ที่รับมาจาก constructor
+     */
+    private initializeState(config: CalendarState): void {
+        // กำหนดค่าพื้นฐาน
+        this.value = config.value || new Date()
+        this.ui_value = config.value || new Date()
+
+        // กำหนดภาษาและรูปแบบปี
+        this.lang = config.lang || 'en'
+        this.year = config.year === 'th' ? 'th' : 'en'
+
+        // กำหนด callbacks
+        if (typeof config.nextDate === 'function') {
+            this.nextDate = config.nextDate
+        }
+        if (typeof config.nextMonth === 'function') {
+            this.nextMonth = config.nextMonth
+        }
+
+        this.setDateOfMinMax(config)
+
+        // กำหนด style
+        if (typeof config.style === 'object' && config.style !== null) {
+            this.style = {
+                ...this.style,
+                ...config.style,
+            }
+        }
+    }
+
+    /**
+     * ตรวจสอบความถูกต้องของ config
+     * @private
+     */
+    private validateConfig(config: CalendarState): void {
+        if (!config.value) {
+            throw new DateValidationError('ต้องระบุค่า value เริ่มต้น')
+        }
+        if (config.min && config.max && config.min > config.max) {
+            throw new DateValidationError('ค่า min ต้องน้อยกว่าหรือเท่ากับ max')
+        }
+    }
+
+    /**
+     * ตั้งค่า ARIA attributes สำหรับการเข้าถึง
+     * @private
+     */
+    private setupAccessibility(): void {
+        const container = this.rootEl()
+        container.setAttribute('role', 'application')
+        container.setAttribute('aria-label', 'ปฏิทิน')
+    }
+
+    /**
+     * สร้างเซลล์วันที่พร้อม ARIA attributes
+     */
     render() {
         this.startInit()
 
@@ -67,16 +117,46 @@ class Calendar extends Main {
         this.createBox(shadow, container)
     }
 
-    update(data: Partial<Pick<CalenderState, 'max' | 'min' | 'value'>>) {
-        this.setState(data)
+    /**
+     * ล้างการเลือกวันที่
+     * @public
+     */
+    public clear(): void {
+        this.onSetOption('SET_VALUE_AND_UI', new Date())
         this.render()
     }
-    getState() {
+
+    /**
+     * อัพเดทค่า config ของปฏิทิน
+     * @public
+     * @param config - ค่า config ใหม่
+     * @throws {DateValidationError} เมื่อค่า config ไม่ถูกต้อง
+     */
+    update(config: Partial<CalendarState>) {
+        this.validateConfig({ ...this.getState(), ...config } as CalendarState)
+
+        // if  ถูกเรียกมาจากข้างนอกจริง เอาไว้เปลี่ยนค่า วันเดือน ปี ทั้ง ui และ state แล้วทำการ render calendar ใหม่
+        if (config.value) {
+            this.setDateOfMinMax(config)
+
+            this.onSetOption('SET_VALUE_AND_UI', config.value)
+        }
+        this.render()
+    }
+
+    /**
+     * ดึงค่าสถานะปัจจุบันของปฏิทิน
+     * @public
+     * @returns สถานะปัจจุบันของปฏิทิน
+     */
+    public getState(): CalendarState {
         return {
-            id: this.id,
             value: this.value,
-            ui_value: this.ui_value,
-            el: this.rootEl(),
+            min: this.min,
+            max: this.max,
+            lang: this.lang,
+            year: this.year,
+            style: this.style,
         }
     }
 
@@ -109,9 +189,10 @@ class Calendar extends Main {
 
             return res
         }
-        const yearType = this.year === 'th' ? 543 : 0
-        const month = this.getMonth(this.ui_value)[this.lang || 'th']
-        const year = this.ui_value.getFullYear() + yearType
+        const plush_year = this.year === 'th' ? 543 : 0
+        const month = this.getMonth(this.ui_value)[this.lang]
+        const year = this.ui_value.getFullYear() + plush_year
+
         const title: StateElement = {
             tag: 'div',
             props: {
@@ -203,7 +284,7 @@ class Calendar extends Main {
         for (let i = 0; i < this.getMonth(date).days; i++) {
             const _date = new Date(date.getFullYear(), date.getMonth(), i + 1)
             const current = this.checkSameDate(new Date(), _date)
-                ? ' current_date'
+                ? 'current_date'
                 : ''
             dayLists.push(
                 this.createDate(
@@ -255,7 +336,7 @@ class Calendar extends Main {
             },
         }
 
-        if (isDisabled) data.props!['data_calendar'] = 'disabled'
+        if (isDisabled) data.props!['calendar'] = 'disabled'
         if (this.checkSameDate(date, this.value))
             data.props!['class'] += ' picker_date'
 
@@ -284,19 +365,18 @@ class Calendar extends Main {
         this.render()
     }
 
-    private setState(
-        data: Partial<Pick<CalenderState, 'max' | 'min' | 'value'>>
-    ) {
-        if (data.min && data.min <= this.value) {
-            this.min = data.min
-        }
-        if (data.max && data.max >= this.value) {
-            this.max = data.max
+    private setDateOfMinMax(config: Partial<CalendarState>) {
+        // กำหนดขอบเขตวันที่
+        const valueOfDate = this.value.valueOf()
+        if (
+            config.min instanceof Date &&
+            config.min!.valueOf() <= valueOfDate
+        ) {
+            this.min = config.min
         }
 
-        // if  ถูกเรียกมาจากข้างนอกจริง เอาไว้เปลี่ยนค่า วันเดือน ปี ทั้ง ui และ state แล้วทำการ render calendar ใหม่
-        if (data.value) {
-            this.onSetOption('SET_VALUE_AND_UI', data.value)
+        if (config.max instanceof Date && config.max.valueOf() >= valueOfDate) {
+            this.max = config.max
         }
     }
     private onSetOption(type: 'SET_UI' | 'SET_VALUE_AND_UI', date: Date) {
@@ -310,5 +390,3 @@ class Calendar extends Main {
         }
     }
 }
-
-export default Calendar

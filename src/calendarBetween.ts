@@ -1,10 +1,12 @@
-import Main, { StateElement, Style } from './main'
 import { addMonth } from 'adc-directive'
+import { DateValidationError } from './composition-calendar'
+import Main from './main'
+import { StateElement, Style } from './type-calendar'
 type Box = StateElement & {
     children: StateElement[]
 }
 
-export interface CalenderState {
+export type CalendarBetweenState = {
     lang?: 'thai' | 'en' | 'th' | 'english'
     nextDate?: (arg: any) => void // function
     nextMonth?: (arg: any) => void // function
@@ -16,7 +18,7 @@ export interface CalenderState {
     style?: Style
 }
 
-class Calendar extends Main {
+export class swCalendarBetween extends Main {
     /*------------------------------Set---------------------------------*/
     private category: 'DAY' | 'BETWEEN' = 'BETWEEN' // type day
 
@@ -29,32 +31,17 @@ class Calendar extends Main {
     private min: Date = new Date()
     private max: Date = new Date('2200-01-01')
 
-    private ui_value: Date
+    private ui_value: Date = new Date()
     private style?: Style = {}
     private values: Date[] = [new Date(), new Date()]
 
     private betweens: Array<Date | undefined> = [new Date(), new Date()]
 
-    constructor(id: string, data: CalenderState) {
+    constructor(id: string, config: CalendarBetweenState) {
         super(id)
-        const startDate = data.values[0] || new Date()
-        const endDate = data.values[1] || new Date()
-        this.values = [startDate, endDate]
-        this.ui_value = this.getValues()[0]!
-
-        this.betweens = this.values
-        this.lang = data.lang || 'en'
-
-        this.nextDate =
-            typeof data.nextDate == 'function' ? data.nextDate : undefined
-        this.nextMonth =
-            typeof data.nextMonth == 'function' ? data.nextMonth : undefined
-
-        this.year = data.year == 'th' ? 'th' : 'en' // พ.ศ.  ค.ศ.
-        if (typeof data.style == 'object' && data.style != null) {
-            this.style = Object.assign(this.style!, data.style)
-        }
-        this.setState(data)
+        this.validateConfig(config)
+        this.initializeState(config)
+        this.setupAccessibility()
     }
 
     render() {
@@ -75,8 +62,54 @@ class Calendar extends Main {
         this.createBox(shadow, container)
     }
 
-    update(data: Partial<Pick<CalenderState, 'max' | 'min' | 'values'>>) {
-        this.setState(data)
+    /**
+     * กำหนดค่าเริ่มต้นให้กับ state ทั้งหมดของ Calendar
+     * @private
+     * @param config - ค่า configuration ที่รับมาจาก constructor
+     */
+    private initializeState(config: CalendarBetweenState): void {
+        const startDate = config.values[0] || new Date()
+        const endDate = config.values[1] || new Date()
+        this.values = [startDate, endDate]
+        this.ui_value = this.getValues()[0]!
+
+        this.betweens = this.values
+        this.lang = config.lang || 'en'
+
+        this.nextDate =
+            typeof config.nextDate == 'function' ? config.nextDate : undefined
+        this.nextMonth =
+            typeof config.nextMonth == 'function' ? config.nextMonth : undefined
+
+        this.year = config.year == 'th' ? 'th' : 'en' // พ.ศ.  ค.ศ.
+        if (typeof config.style == 'object' && config.style != null) {
+            this.style = Object.assign(this.style!, config.style)
+        }
+
+        this.setDateOfMinMax(config)
+
+        // กำหนด style
+        if (typeof config.style === 'object' && config.style !== null) {
+            this.style = {
+                ...this.style,
+                ...config.style,
+            }
+        }
+    }
+
+    update(
+        config: Partial<Pick<CalendarBetweenState, 'max' | 'min' | 'values'>>
+    ) {
+        this.validateConfig({
+            ...this.getState(),
+            ...config,
+        } as CalendarBetweenState)
+        // if  ถูกเรียกมาจากข้างนอกจริง เอาไว้เปลี่ยนค่า วันเดือน ปี ทั้ง ui และ state แล้วทำการ render calendar ใหม่
+        if (config.values) {
+            this.setDateOfMinMax(config)
+
+            this.onSetOption('SET_VALUE_AND_UI', config.values)
+        }
         this.render()
     }
     getState() {
@@ -310,7 +343,7 @@ class Calendar extends Main {
             },
         }
 
-        if (isDisabled) data.props!['data_calendar'] = 'disabled'
+        if (isDisabled) data.props!['calendar'] = 'disabled'
         if (this.checkSameDate(date, this.betweens[0]!))
             data.props!['class'] += ' picker_date'
 
@@ -362,20 +395,21 @@ class Calendar extends Main {
         this.render()
     }
 
-    private setState(
-        data: Partial<Pick<CalenderState, 'max' | 'min' | 'values'>>
+    private setDateOfMinMax(
+        config: Partial<Pick<CalendarBetweenState, 'max' | 'min' | 'values'>>
     ) {
         const [start, end] = this.getValues()
-        if (data.min && data.min <= start) {
-            this.min = data.min
-        }
-        if (data.max && data.max >= end) {
-            this.max = data.max
+        const valueOfStart = start.valueOf()
+        const valueOfEnd = end.valueOf()
+        if (
+            config.min instanceof Date &&
+            config.min!.valueOf() <= valueOfStart
+        ) {
+            this.min = config.min
         }
 
-        // if  ถูกเรียกมาจากข้างนอกจริง เอาไว้เปลี่ยนค่า วันเดือน ปี ทั้ง ui และ state แล้วทำการ render calendar ใหม่
-        if (data.values) {
-            this.onSetOption('SET_VALUE_AND_UI', data.values)
+        if (config.max instanceof Date && config.max.valueOf() >= valueOfEnd) {
+            this.max = config.max
         }
     }
     private onSetOption(type: 'SET_UI' | 'SET_VALUE_AND_UI', dates: Date[]) {
@@ -388,6 +422,27 @@ class Calendar extends Main {
             this.ui_value = dates[0]
         }
     }
-}
 
-export default Calendar
+    /**
+     * ตั้งค่า ARIA attributes สำหรับการเข้าถึง
+     * @private
+     */
+    private setupAccessibility(): void {
+        const container = this.rootEl()
+        container.setAttribute('role', 'application')
+        container.setAttribute('aria-label', 'ปฏิทิน')
+    }
+
+    /**
+     * ตรวจสอบความถูกต้องของ config
+     * @private
+     */
+    private validateConfig(config: CalendarBetweenState): void {
+        if (config.values.length !== 2) {
+            throw new DateValidationError('ต้องระบุค่า Date between เริ่มต้น')
+        }
+        if (config.min && config.max && config.min > config.max) {
+            throw new DateValidationError('ค่า min ต้องน้อยกว่าหรือเท่ากับ max')
+        }
+    }
+}
