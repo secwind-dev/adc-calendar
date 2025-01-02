@@ -1,5 +1,11 @@
 # adc-calendar
 
+## 1.1.1
+
+### Patch Changes
+
+- import swCalendar
+
 ## 1.1.0
 
 ### Minor Changes
