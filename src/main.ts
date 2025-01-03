@@ -1,3 +1,4 @@
+import { addDate } from 'adc-directive'
 import { css, lists } from './data-calendar'
 import { Lists, StateElement, Style } from './type-calendar'
 
@@ -104,7 +105,7 @@ class ElementRender {
 
     protected onCheckDisabled(date: Date, min: Date, max: Date) {
         const dateValueOf = date.valueOf()
-        const minValueOf = min.valueOf()
+        const minValueOf = addDate(min, -1).valueOf()
         const maxValueOf = max.valueOf()
         return dateValueOf < minValueOf || dateValueOf > maxValueOf
     }
