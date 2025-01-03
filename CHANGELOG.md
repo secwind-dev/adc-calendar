@@ -1,5 +1,11 @@
 # adc-calendar
 
+## 1.1.3
+
+### Patch Changes
+
+- "license": "MIT"
+
 ## 1.1.2
 
 ### Patch Changes
