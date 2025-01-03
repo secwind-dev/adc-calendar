@@ -1,5 +1,11 @@
 # adc-calendar
 
+## 1.1.2
+
+### Patch Changes
+
+- แก้บัค minDate
+
 ## 1.1.1
 
 ### Patch Changes
