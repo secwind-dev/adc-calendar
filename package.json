@@ -6,7 +6,7 @@
         "type": "git",
         "url": "https://app-adc.github.io/calendar-docs"
     },
-    "description": "Calendar ที่มีทั้ง EN | TH และสามารถ เป็นจาก ค.ศ. เป็ร  พ.ศ. และ custom calendar ได้ตามต้องการ",
+    "description": "Calendar ที่มีทั้ง EN | TH และสามารถ เป็นจาก ค.ศ. เป็น  พ.ศ. และ custom calendar ได้ตามต้องการ",
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
